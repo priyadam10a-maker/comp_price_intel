@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>Competitive Price Intelligence Dashboard</h1>
+
+    <p>
+        Welcome to the system.
+    </p>
+
+    <h3>Modules</h3>
+
+    <ul>
+        <li>Product Analysis</li>
+        <li>Competitor Monitoring</li>
+        <li>Price Recommendations</li>
+        <li>Feature Recommendations</li>
+        <li>Reports & Charts</li>
+    </ul>
+
+    <a href="{% url 'logout' %}">
+        Logout
+    </a>
+
+</div>
+
+{% endblock %}
