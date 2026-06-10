@@ -1,5 +1,26 @@
-{% extends "base.html" %} 
-{% block title %} Home page {% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}
+Home
+{% endblock %}
+
 {% block content %}
-<p>This is the Home Page</p>
+
+<h1>Competitive Price Intelligence</h1>
+
+<p>
+Analyze competitor pricing and generate
+business insights.
+</p>
+
+<a href="{% url 'login' %}"
+   class="btn btn-primary">
+   Login
+</a>
+
+<a href="{% url 'register' %}"
+   class="btn btn-success">
+   Register
+</a>
+
 {% endblock %}

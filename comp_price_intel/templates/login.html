@@ -1,19 +1,73 @@
-<form method="POST">
+{% extends 'base.html' %}
 
-    {% csrf_token %}
+{% block title %}
+Login
+{% endblock %}
 
-    <input
-        type="email"
-        name="email"
-        placeholder="Email">
+{% block content %}
 
-    <input
-        type="password"
-        name="password"
-        placeholder="Password">
+<div class="row justify-content-center">
 
-    <button type="submit">
-        Login
-    </button>
+    <div class="col-md-5">
 
-</form>
+        <div class="card">
+
+            <div class="card-header">
+                <h3>Login</h3>
+            </div>
+
+            <div class="card-body">
+
+                {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error }}
+                    </div>
+                {% endif %}
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    <div class="form-group">
+
+                        <label>Email</label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Password</label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Login
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

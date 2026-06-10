@@ -1,28 +1,100 @@
 {% extends 'base.html' %}
 
+{% block title %}
+Dashboard
+{% endblock %}
+
 {% block content %}
 
-<div class="card">
+<h2 class="mb-4">
+    Welcome {{ user_name }}
+</h2>
 
-    <h1>Competitive Price Intelligence Dashboard</h1>
+<div class="row">
 
-    <p>
-        Welcome to the system.
-    </p>
+    <div class="col-md-4">
 
-    <h3>Modules</h3>
+        <div class="card mb-3">
 
-    <ul>
-        <li>Product Analysis</li>
-        <li>Competitor Monitoring</li>
-        <li>Price Recommendations</li>
-        <li>Feature Recommendations</li>
-        <li>Reports & Charts</li>
-    </ul>
+            <div class="card-body">
 
-    <a href="{% url 'logout' %}">
-        Logout
-    </a>
+                <h5 class="card-title">
+                    Product Search
+                </h5>
+
+                <p class="card-text">
+                    Search products and compare competitor pricing.
+                </p>
+
+                <a
+                    href="{% url 'search_product' %}"
+                    class="btn btn-primary">
+
+                    Open
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card mb-3">
+
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    Reports
+                </h5>
+
+                <p class="card-text">
+                    View pricing reports and recommendations.
+                </p>
+
+                <button
+                    class="btn btn-secondary"
+                    disabled>
+
+                    Coming Soon
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card mb-3">
+
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    Logout
+                </h5>
+
+                <p class="card-text">
+                    Securely sign out.
+                </p>
+
+                <a
+                    href="{% url 'logout' %}"
+                    class="btn btn-danger">
+
+                    Logout
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 

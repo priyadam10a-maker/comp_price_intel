@@ -1,10 +1,10 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.hashers import make_password, check_password
-from .models import User
+from .models import User,Product,Category,Brand,ProductSpecification
 import jwt
 from datetime import datetime,timedelta
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 
 def home(request):
     return render(request,'home.html')
@@ -113,3 +113,126 @@ def logout_view(request):
     response=redirect("login")
     response.delete_cookie("jwt_token")
     return response
+
+def search_product(request):
+
+    payload = verify_jwt(request)
+
+    if not payload:
+        return redirect("login")
+
+    if request.method == "POST":
+
+        category = request.POST.get("category")
+        brand = request.POST.get("brand")
+        product_name = request.POST.get("product")
+        feature = request.POST.get("feature")
+
+        print("Category:", category)
+        print("Brand:", brand)
+        print("Product:", product_name)
+        print("Feature:", feature)
+
+        try:
+
+            product = Product.objects.get(
+                product_name=product_name
+            )
+
+            return render(
+                request,
+                "product_details.html",
+                {
+                    "product": product
+                }
+            )
+
+        except Product.DoesNotExist:
+
+            return render(
+                request,
+                "search_product.html",
+                {
+                    "error": "Product not found"
+                }
+            )
+
+    return render(
+        request,
+        "search_product.html"
+    )
+
+def category_suggestions(request):
+
+    query = request.GET.get("q", "")
+
+    categories = Category.objects.filter(
+        category_name__icontains=query
+    )[:10]
+
+    data = [
+        category.category_name
+        for category in categories    
+    ]
+
+    return JsonResponse(data, safe=False)
+
+def brand_suggestions(request):
+
+    query = request.GET.get("q","")
+
+    brands = Brand.objects.filter(
+        brand_name__icontains=query
+    )[:10]
+
+    data = [
+        brand.brand_name
+        for brand in brands
+    ]
+
+    return JsonResponse(data,safe=False)
+
+def product_suggestions(request):
+
+    query = request.GET.get("q","")
+
+    products = Product.objects.filter(
+        product_name__icontains=query
+    )[:10]
+
+    data = [
+        product.product_name
+        for product in products
+    ]
+
+    return JsonResponse(data,safe=False)
+
+def feature_suggestions(request):
+
+    query = request.GET.get("q","")
+
+    features = ProductSpecification.objects.filter(
+        specification_name__icontains=query
+    )[:10]
+
+    data = [
+        feature.specification_name
+        for feature in features
+    ]
+
+    return JsonResponse(data,safe=False)
+
+def start_scraping(request):
+
+    payload = verify_jwt(request)
+
+    if not payload:
+        return redirect("login")
+
+    product_id = request.POST.get(
+        "product_id"
+    )
+
+    return HttpResponse(
+        f"Scraping started for Product ID {product_id}"
+    )

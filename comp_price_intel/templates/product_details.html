@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Product Details
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-8">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h3>
+                    Product Details
+                </h3>
+
+            </div>
+
+            <div class="card-body">
+
+                <table class="table table-bordered">
+
+                    <tr>
+                        <th width="30%">
+                            Product Name
+                        </th>
+
+                        <td>
+                            {{ product.product_name }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            Brand
+                        </th>
+
+                        <td>
+                            {{ product.brand.brand_name }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            Category
+                        </th>
+
+                        <td>
+                            {{ product.category.category_name }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            Current Price
+                        </th>
+
+                        <td>
+                            ₹{{ product.current_price }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            Average Rating
+                        </th>
+
+                        <td>
+                            {{ product.average_rating }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            Total Reviews
+                        </th>
+
+                        <td>
+                            {{ product.total_reviews }}
+                        </td>
+                    </tr>
+
+                </table>
+
+                <form
+                    action="{% url 'start_scraping' %}"
+                    method="POST">
+
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="product_id"
+                        value="{{ product.product_id }}">
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        Start Scraping
+
+                    </button>
+
+                    <a
+                        href="{% url 'search_product' %}"
+                        class="btn btn-secondary">
+
+                        Back
+
+                    </a>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

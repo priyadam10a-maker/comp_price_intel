@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Search Product
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-8">
+
+        <div class="card">
+
+            <div class="card-header">
+                <h3>Product Search</h3>
+            </div>
+
+            <div class="card-body">
+
+                {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error }}
+                    </div>
+                {% endif %}
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    <div class="form-group">
+
+                        <label>Category</label>
+
+                        <input
+                            type="text"
+                            id="category"
+                            name="category"
+                            class="form-control">
+
+                        <div
+                            id="category-suggestions"
+                            class="suggestions">
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Brand</label>
+
+                        <input
+                            type="text"
+                            id="brand"
+                            name="brand"
+                            class="form-control">
+
+                        <div
+                            id="brand-suggestions"
+                            class="suggestions">
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Product</label>
+
+                        <input
+                            type="text"
+                            id="product"
+                            name="product"
+                            class="form-control">
+
+                        <div
+                            id="product-suggestions"
+                            class="suggestions">
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Feature</label>
+
+                        <input
+                            type="text"
+                            id="feature"
+                            name="feature"
+                            class="form-control">
+
+                        <div
+                            id="feature-suggestions"
+                            class="suggestions">
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Search
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+.suggestions{
+
+    border:1px solid #ccc;
+    background:white;
+    max-height:200px;
+    overflow-y:auto;
+}
+
+.suggestion-item{
+
+    padding:10px;
+    cursor:pointer;
+}
+
+.suggestion-item:hover{
+
+    background:#f2f2f2;
+}
+
+</style>
+
+<script>
+
+function setupAutocomplete(
+    inputId,
+    suggestionId,
+    url
+){
+
+    const input =
+        document.getElementById(inputId);
+
+    const suggestionBox =
+        document.getElementById(suggestionId);
+
+    input.addEventListener(
+        "keyup",
+        function(){
+
+            let query = input.value;
+
+            if(query.length===0){
+
+                suggestionBox.innerHTML="";
+
+                return;
+            }
+
+            fetch(
+                `${url}?q=${query}`
+            )
+
+            .then(response=>response.json())
+
+            .then(data=>{
+
+                suggestionBox.innerHTML="";
+
+                data.forEach(item=>{
+
+                    let div =
+                        document.createElement("div");
+
+                    div.classList.add(
+                        "suggestion-item"
+                    );
+
+                    div.innerText=item;
+
+                    div.onclick=function(){
+
+                        input.value=item;
+
+                        suggestionBox.innerHTML="";
+                    };
+
+                    suggestionBox.appendChild(div);
+
+                });
+
+            });
+
+        }
+    );
+
+}
+
+setupAutocomplete(
+    "category",
+    "category-suggestions",
+    "/category-suggestions/"
+);
+
+setupAutocomplete(
+    "brand",
+    "brand-suggestions",
+    "/brand-suggestions/"
+);
+
+setupAutocomplete(
+    "product",
+    "product-suggestions",
+    "/product-suggestions/"
+);
+
+setupAutocomplete(
+    "feature",
+    "feature-suggestions",
+    "/feature-suggestions/"
+);
+
+</script>
+
+{% endblock %}
