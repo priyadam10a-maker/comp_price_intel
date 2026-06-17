@@ -1,26 +1,393 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}
-Home
+{% block title %}Competitive Price Intelligence | Analyze competitive pricing and generate business insights effortlessly{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Home Page Specific Styles */
+    .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding-top: 80px;
+        position: relative;
+    }
+    
+    .hero-content {
+        flex: 1;
+        padding-right: 50px;
+        z-index: 2;
+    }
+    
+    .hero h1 {
+        font-size: 5rem;
+        margin-bottom: 40px;
+        line-height: 1.1;
+    }
+    
+    .hero-image-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .geometric-clip {
+        width: 100%;
+        max-width: 500px;
+        height: 600px;
+        background-color: #eee;
+        clip-path: polygon(0 20%, 100% 0, 80% 100%, 20% 80%);
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .geometric-clip img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .asterisk-accent {
+        position: absolute;
+        top: 50%;
+        left: -50px;
+        transform: translateY(-50%);
+        font-size: 15rem;
+        color: var(--accent-neon);
+        font-weight: 800;
+        line-height: 1;
+        z-index: 3;
+    }
+    
+    .asterisk-glow {
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(0,255,85,0.15) 0%, rgba(6,24,14,0) 70%);
+        border-radius: 50%;
+        z-index: 1;
+    }
+
+    /* Services Section */
+    .services {
+        padding: 100px 0;
+    }
+    
+    .services h2 {
+        text-align: center;
+        color: var(--accent-neon);
+        font-size: 3rem;
+        margin-bottom: 60px;
+    }
+    
+    .service-card {
+        background-color: var(--accent-neon);
+        color: var(--text-dark);
+        text-align: center;
+        border-radius: 0;
+        overflow: hidden;
+    }
+    
+    .service-card .img-wrapper {
+        height: 250px;
+        width: 100%;
+        background-color: #ccc;
+        border-bottom: 5px solid #8A2BE2; /* Purple accent seen in screenshot */
+    }
+    
+    .service-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .service-info {
+        padding: 40px 30px;
+    }
+    
+    .service-info h3 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+
+    /* Why Us Section */
+    .why-us {
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+        text-align: center;
+    }
+    
+    .why-us h2 {
+        font-size: 3rem;
+        margin-bottom: 80px;
+    }
+    
+    .why-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .icon-wrapper {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 4px solid transparent;
+        background: linear-gradient(var(--bg-light), var(--bg-light)) padding-box,
+                    linear-gradient(135deg, var(--accent-neon), #ffff00) border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .icon-wrapper svg {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .why-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+    
+    .why-card p {
+        color: #555;
+    }
+
+    /* Contact Section */
+    .contact {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .contact .flex-between {
+        align-items: flex-start;
+    }
+    
+    .contact-info {
+        flex: 1;
+        padding-right: 50px;
+    }
+    
+    .contact h2 {
+        font-size: 4rem;
+        color: var(--accent-neon);
+        margin-bottom: 10px;
+    }
+    
+    .contact p {
+        color: var(--accent-neon);
+        margin-bottom: 40px;
+    }
+    
+    .contact-details {
+        margin-top: 60px;
+    }
+    
+    .contact-details h4 {
+        color: var(--accent-neon);
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+    
+    .contact-details p {
+        color: var(--text-light);
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+    }
+    
+    .social-icons {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .social-icons span {
+        width: 30px;
+        height: 30px;
+        background-color: var(--text-light);
+        color: var(--text-dark);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+    }
+
+    /* Testimonials Section */
+    .testimonials {
+        background-color: var(--accent-neon);
+        color: var(--text-dark);
+    }
+    
+    .testimonials h2 {
+        font-size: 4rem;
+        margin-bottom: 60px;
+    }
+    
+    .testimonial-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    
+    .testimonial-item {
+        display: flex;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        padding-bottom: 30px;
+    }
+    
+    .testimonial-item:last-child {
+        border-bottom: none;
+    }
+    
+    .testimonial-item h3 {
+        width: 250px;
+        font-size: 1.5rem;
+    }
+    
+    .testimonial-item p {
+        flex: 1;
+        font-size: 1.1rem;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
+<section class="hero container flex-between">
+    <div class="hero-content">
+        <h1 style="font-size: 2.5rem; line-height: 1.3;">Analyze competitive pricing and generate business insights effortlessly.</h1>
+    </div>
+    <div class="hero-image-wrapper">
+        <div class="asterisk-glow"></div>
+        <div class="asterisk-accent">*</div>
+        <div class="geometric-clip">
+            <div style="width: 100%; height: 100%; background: url('{% static "images/wavy_bg.jpg.jpg" %}?v=2') center/cover; image-rendering: high-quality;"></div>
+        </div>
+    </div>
+</section>
 
-<h1>Competitive Price Intelligence</h1>
+<!-- Services Section -->
+<section class="services container">
+    <h2>What We Can Do For You</h2>
+    <div class="grid-3">
+        <div class="service-card">
+            <div class="img-wrapper">
+                <div style="width: 100%; height: 100%; background: url('https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&q=80') center/cover;"></div>
+            </div>
+            <div class="service-info">
+                <h3>Mobile App<br>Development</h3>
+                <p>Give a detailed description of the service being provided here.</p>
+            </div>
+        </div>
+        <div class="service-card">
+            <div class="img-wrapper" style="border-bottom-color: transparent;">
+                <div style="width: 100%; height: 100%; background: url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80') center/cover;"></div>
+            </div>
+            <div class="service-info">
+                <h3>Web App<br>Development</h3>
+                <p>Give a detailed description of the service being provided here.</p>
+            </div>
+        </div>
+        <div class="service-card">
+            <div class="img-wrapper" style="border-bottom-color: transparent;">
+                <div style="width: 100%; height: 100%; background: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80') center/cover;"></div>
+            </div>
+            <div class="service-info">
+                <h3>Internal App<br>Development</h3>
+                <p>Give a detailed description of the service being provided here.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-<p>
-Analyze competitor pricing and generate
-business insights.
-</p>
+<!-- Why Us Section -->
+<section class="why-us section-padding">
+    <div class="container">
+        <h2>Why Us</h2>
+        <div class="grid-3">
+            <div class="why-card">
+                <div class="icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                </div>
+                <h3>Bespoke<br>Solutions</h3>
+                <p>Support your header with a short one liner.</p>
+            </div>
+            <div class="why-card">
+                <div class="icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><circle cx="8" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="16" cy="12" r="1"/></svg>
+                </div>
+                <h3>Reliable<br>Customer Support</h3>
+                <p>Support your header with a short one liner.</p>
+            </div>
+            <div class="why-card">
+                <div class="icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <h3>Secure<br>Systems</h3>
+                <p>Support your header with a short one liner.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-<a href="{% url 'login' %}"
-   class="btn btn-primary">
-   Login
-</a>
+<!-- Contact Section -->
+<section class="contact section-padding">
+    <div class="container flex-between">
+        <div class="contact-info">
+            <h2>Let us help you.</h2>
+            <p>Reach out for an exploratory conversation.</p>
+            <a href="{% url 'register' %}" class="btn btn-primary">CONTACT US</a>
+            
+            <div class="contact-details">
+                <h4>PHONE</h4>
+                <p>(012) 345-6789</p>
+                
+                <h4>EMAIL</h4>
+                <p>hello@reallygreatsite.com</p>
+                
+                <h4>SOCIAL</h4>
+                <div class="social-icons">
+                    <span>f</span>
+                    <span>t</span>
+                    <span>i</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image-wrapper">
+            <div class="asterisk-glow"></div>
+            <div class="asterisk-accent">*</div>
+            <div class="geometric-clip">
+                <div style="width: 100%; height: 100%; background: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80') center/cover;"></div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<a href="{% url 'register' %}"
-   class="btn btn-success">
-   Register
-</a>
+<!-- Client Feedback Section -->
+<section class="testimonials section-padding">
+    <div class="container">
+        <h2>Client<br>Feedback</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-item">
+                <h3>Errandeo<br>Services</h3>
+                <p>Testimonials are short quotes from people who love your brand. It's a great way to convince customers to try your services.</p>
+            </div>
+            <div class="testimonial-item">
+                <h3>Sandrine<br>Logistics</h3>
+                <p>Testimonials are short quotes from people who love your brand. It's a great way to convince customers to try your services.</p>
+            </div>
+            <div class="testimonial-item">
+                <h3>Haligi Realty</h3>
+                <p>Testimonials are short quotes from people who love your brand. It's a great way to convince customers to try your services.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
 {% endblock %}

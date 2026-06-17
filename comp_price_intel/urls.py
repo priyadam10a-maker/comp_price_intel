@@ -13,4 +13,10 @@ urlpatterns = [
     path('product-suggestions/',views.product_suggestions,name='product_suggestions'),
     path('feature-suggestions/',views.feature_suggestions,name='feature_suggestions'),
     path('start-scraping/',views.start_scraping,name='start_scraping'),
+    path('your-products/', views.your_products, name='your_products'),
+    path('api/add-user-product/', views.add_user_product, name='add_user_product'),
+    path('api/edit-user-product/<int:product_id>/', views.edit_user_product, name='edit_user_product'),
+    path('api/delete-user-product/<int:product_id>/', views.delete_user_product, name='delete_user_product'),
+    path('api/add-brand/', views.add_brand, name='add_brand'),
+    path('api/add-category/', views.add_category, name='add_category'),
 ]

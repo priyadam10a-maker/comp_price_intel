@@ -1,73 +1,36 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}
-Login
-{% endblock %}
+{% block title %}Login | TEKTIAS NETWORK{% endblock %}
 
 {% block content %}
-
-<div class="row justify-content-center">
-
-    <div class="col-md-5">
-
-        <div class="card">
-
-            <div class="card-header">
-                <h3>Login</h3>
+<div class="auth-container">
+    <div class="auth-card">
+        <h2 class="text-neon">Sign in</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Sign in to your account</p>
+        
+        {% if error %}
+            <div style="background-color: rgba(255,0,0,0.1); border-left: 4px solid red; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                {{ error }}
             </div>
-
-            <div class="card-body">
-
-                {% if error %}
-                    <div class="alert alert-danger">
-                        {{ error }}
-                    </div>
-                {% endif %}
-
-                <form method="POST">
-
-                    {% csrf_token %}
-
-                    <div class="form-group">
-
-                        <label>Email</label>
-
-                        <input
-                            type="email"
-                            name="email"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Password</label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary">
-
-                        Login
-
-                    </button>
-
-                </form>
-
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
             </div>
-
-        </div>
-
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+            
+            <div class="auth-links">
+                Don't have an account? <a href="{% url 'register' %}">Create one</a>
+            </div>
+        </form>
     </div>
-
 </div>
-
 {% endblock %}

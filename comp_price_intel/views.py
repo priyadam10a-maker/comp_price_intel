@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.hashers import make_password, check_password
-from .models import User,Product,Category,Brand,ProductSpecification
+from .models import User,Product,Category,Brand,ProductSpecification,UserProduct
+import json
 import jwt
 from datetime import datetime,timedelta
 from django.conf import settings
@@ -101,11 +102,17 @@ def dashboard(request):
     if not payload:
         return redirect("login")
 
+    try:
+        user = User.objects.get(user_id=payload["user_id"])
+        display_name = user.full_name
+    except User.DoesNotExist:
+        display_name = payload.get("email", "User")
+
     return render(
         request,
         "dashboard.html",
         {
-            "user_name": payload["email"]
+            "user_name": display_name
         }
     )
 
@@ -236,3 +243,129 @@ def start_scraping(request):
     return HttpResponse(
         f"Scraping started for Product ID {product_id}"
     )
+
+def your_products(request):
+    payload = verify_jwt(request)
+    if not payload:
+        return redirect("login")
+    
+    try:
+        user = User.objects.get(user_id=payload["user_id"])
+        products = UserProduct.objects.filter(user=user)
+    except User.DoesNotExist:
+        return redirect("login")
+        
+    return render(request, "your_products.html", {"products": products})
+
+def add_user_product(request):
+    payload = verify_jwt(request)
+    if not payload:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+        
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user = User.objects.get(user_id=payload["user_id"])
+            
+            brand_name = data.get("brand")
+            category_name = data.get("category")
+            
+            brand = Brand.objects.filter(brand_name=brand_name).first()
+            if not brand:
+                brand = Brand.objects.create(brand_name=brand_name)
+                
+            category = Category.objects.filter(category_name=category_name).first()
+            if not category:
+                return JsonResponse({"error": "Please select a valid category"}, status=400)
+                
+            UserProduct.objects.create(
+                user=user,
+                product_name=data.get("product_name"),
+                brand=brand,
+                category=category,
+                model_number=data.get("model_number"),
+                current_price=data.get("current_price") or None
+            )
+            return JsonResponse({"message": "Product added successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+def edit_user_product(request, product_id):
+    payload = verify_jwt(request)
+    if not payload:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+        
+    if request.method in ["PUT", "POST"]:
+        try:
+            data = json.loads(request.body)
+            user = User.objects.get(user_id=payload["user_id"])
+            product = UserProduct.objects.get(user_product_id=product_id, user=user)
+            
+            brand_name = data.get("brand")
+            category_name = data.get("category")
+            
+            brand = Brand.objects.filter(brand_name=brand_name).first()
+            if not brand:
+                brand = Brand.objects.create(brand_name=brand_name)
+                
+            category = Category.objects.filter(category_name=category_name).first()
+            if not category:
+                return JsonResponse({"error": "Please select a valid category"}, status=400)
+                
+            product.product_name = data.get("product_name")
+            product.brand = brand
+            product.category = category
+            product.model_number = data.get("model_number")
+            product.current_price = data.get("current_price") or None
+            product.save()
+            
+            return JsonResponse({"message": "Product updated successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+def delete_user_product(request, product_id):
+    payload = verify_jwt(request)
+    if not payload:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+        
+    if request.method == "DELETE":
+        try:
+            user = User.objects.get(user_id=payload["user_id"])
+            product = UserProduct.objects.get(user_product_id=product_id, user=user)
+            product.delete()
+            return JsonResponse({"message": "Product deleted successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+def add_brand(request):
+    payload = verify_jwt(request)
+    if not payload:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            brand_name = data.get("brand_name")
+            if not Brand.objects.filter(brand_name=brand_name).exists():
+                Brand.objects.create(brand_name=brand_name)
+            return JsonResponse({"message": "Brand added successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+def add_category(request):
+    payload = verify_jwt(request)
+    if not payload:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            category_name = data.get("category_name")
+            if not Category.objects.filter(category_name=category_name).exists():
+                Category.objects.create(category_name=category_name)
+            return JsonResponse({"message": "Category added successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)

@@ -71,3 +71,32 @@ class ProductSpecification(models.Model):
         managed = False
     def __str__(self):
         return self.specification_name
+
+class UserProduct(models.Model):
+    user_product_id = models.AutoField(primary_key=True, db_column='id')
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        db_column='user_id'
+    )
+    product_name = models.CharField(max_length=255)
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.DO_NOTHING,
+        db_column='brand_id'
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.DO_NOTHING,
+        db_column='category_id'
+    )
+    model_number = models.CharField(max_length=150, null=True, blank=True)
+    current_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = "user_products"
+        managed = False
+        
+    def __str__(self):
+        return self.product_name

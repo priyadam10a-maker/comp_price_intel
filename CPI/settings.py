@@ -78,7 +78,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'price_intelligence_db',
         'USER': 'root',
-        'PASSWORD': 'MySQL@2003',
+        'PASSWORD': 'priyadam2005',
         'HOST': 'localhost',
         'PORT': '3306',
     }

@@ -1,101 +1,59 @@
 {% extends 'base.html' %}
+{% block title %}Dashboard | TEKTIAS NETWORK{% endblock %}
 
-{% block title %}
-Dashboard
-{% endblock %}
+{% block layout %}
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="{% url 'home' %}" class="brand">Competitive Price Intelligence</a>
+        <ul class="sidebar-nav">
+            <li><a href="{% url 'dashboard' %}" class="active">Dashboard</a></li>
+            <li><a href="{% url 'your_products' %}">Your Products</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </aside>
 
-{% block content %}
-
-<h2 class="mb-4">
-    Welcome {{ user_name }}
-</h2>
-
-<div class="row">
-
-    <div class="col-md-4">
-
-        <div class="card mb-3">
-
-            <div class="card-body">
-
-                <h5 class="card-title">
-                    Product Search
-                </h5>
-
-                <p class="card-text">
-                    Search products and compare competitor pricing.
-                </p>
-
-                <a
-                    href="{% url 'search_product' %}"
-                    class="btn btn-primary">
-
-                    Open
-
-                </a>
-
+    <!-- Main Content -->
+    <main class="dashboard-content">
+        <div class="dashboard-header flex-between">
+            <div>
+                <p style="color: var(--accent-neon); font-weight: 600;">OVERVIEW</p>
+                <h1>Welcome, {{ user_name }}</h1>
             </div>
-
         </div>
 
-    </div>
-
-    <div class="col-md-4">
-
-        <div class="card mb-3">
-
-            <div class="card-body">
-
-                <h5 class="card-title">
-                    Reports
-                </h5>
-
-                <p class="card-text">
-                    View pricing reports and recommendations.
-                </p>
-
-                <button
-                    class="btn btn-secondary"
-                    disabled>
-
-                    Coming Soon
-
-                </button>
-
+        <div class="row">
+            <!-- Insights -->
+            <div class="card" style="width: 100%;">
+                <h2>Insights & Trends</h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Competitor pricing trends, analysis history, and market recommendations will appear here.</p>
+                <div style="background-color: rgba(0,0,0,0.2); padding: 40px; border-radius: 10px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
+                    <span style="color: var(--text-muted);">No recent analysis history available.</span>
+                </div>
             </div>
-
         </div>
 
-    </div>
-
-    <div class="col-md-4">
-
-        <div class="card mb-3">
-
-            <div class="card-body">
-
-                <h5 class="card-title">
-                    Logout
-                </h5>
-
-                <p class="card-text">
-                    Securely sign out.
-                </p>
-
-                <a
-                    href="{% url 'logout' %}"
-                    class="btn btn-danger">
-
-                    Logout
-
-                </a>
-
+        <div class="grid-3">
+            <!-- Start Analysis -->
+            <div class="card">
+                <div style="width: 40px; height: 40px; background-color: var(--accent-neon); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--bg-dark); font-weight: bold; margin-bottom: 20px;">
+                    ▶
+                </div>
+                <h2>Start Analysis</h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Run a complete analysis on all your added projects to get the latest competitive pricing reports.</p>
+                <button class="btn btn-primary" style="width: 100%;" onclick="alert('Starting full analysis... (Feature in development)')">Start Full Analysis</button>
             </div>
 
+            <!-- Your Products -->
+            <div class="card">
+                <div style="width: 40px; height: 40px; background-color: var(--bg-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--bg-dark); font-weight: bold; margin-bottom: 20px;">
+                    📦
+                </div>
+                <h2>Your Products</h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Manage your product list. Add new products, edit details, and select specific products for analysis.</p>
+                <a href="{% url 'your_products' %}" class="btn btn-primary" style="width: 100%; text-align: center;">Manage Products</a>
+            </div>
         </div>
-
-    </div>
-
+    </main>
 </div>
-
 {% endblock %}

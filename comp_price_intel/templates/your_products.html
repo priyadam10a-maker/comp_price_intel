@@ -1,0 +1,549 @@
+{% extends 'base.html' %}
+{% block title %}Your Products | TEKTIAS NETWORK{% endblock %}
+
+{% block layout %}
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="{% url 'home' %}" class="brand">Competitive Price Intelligence</a>
+        <ul class="sidebar-nav">
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'your_products' %}" class="active">Your Products</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-content">
+
+<style>
+    /* Table Styles */
+    .table-container {
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        overflow-x: auto;
+    }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--text-light);
+    }
+    .custom-table th {
+        text-align: left;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+    .custom-table td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+    }
+    .custom-table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Action Icons */
+    .action-icons-container {
+        display: flex;
+        gap: 10px;
+        opacity: 0.5;
+        transition: var(--transition);
+    }
+    .custom-table tbody tr:hover .action-icons-container {
+        opacity: 1;
+    }
+    .action-icon {
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        transition: var(--transition);
+        background: rgba(255,255,255,0.05);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+    .action-icon:hover {
+        color: var(--text-dark);
+        background: var(--accent-neon);
+    }
+    .delete-icon:hover {
+        color: white;
+        background: #ff3366;
+    }
+
+    /* Modal Styles */
+    .custom-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .custom-modal {
+        background-color: #041009;
+        border: 1px solid rgba(0, 255, 85, 0.2);
+        border-radius: 20px;
+        width: 100%;
+        max-width: 500px;
+        padding: 40px;
+        position: relative;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .custom-modal h2 {
+        color: var(--accent-neon);
+        margin-bottom: 25px;
+    }
+    .close-modal {
+        position: absolute;
+        top: 20px;
+        right: 25px;
+        font-size: 2rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        line-height: 1;
+    }
+    .close-modal:hover {
+        color: #ff3366;
+    }
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    .btn-secondary {
+        background-color: transparent;
+        border: 1px solid rgba(255,255,255,0.2);
+        color: var(--text-light);
+    }
+    .btn-secondary:hover {
+        background-color: rgba(255,255,255,0.05);
+    }
+
+    /* Input Validations */
+    .invalid-feedback {
+        color: #ff3366;
+        font-size: 0.85rem;
+        display: none;
+        margin-top: 5px;
+    }
+    .was-validated .form-control:invalid ~ .invalid-feedback {
+        display: block;
+    }
+    .was-validated .form-control:invalid {
+        border-color: #ff3366;
+    }
+    
+    /* Autocomplete */
+    .autocomplete-items {
+        position: absolute;
+        border: 1px solid rgba(255,255,255,0.1);
+        background-color: var(--bg-dark);
+        z-index: 99;
+        top: 100%;
+        left: 0;
+        right: 0;
+        border-radius: 0 0 10px 10px;
+        overflow: hidden;
+    }
+    .autocomplete-items div {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .autocomplete-items div:hover {
+        background-color: rgba(0, 255, 85, 0.1);
+        color: var(--accent-neon);
+    }
+
+    /* Search Toggle */
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .search-bar {
+        display: none; /* hidden initially */
+        width: 300px;
+        transition: width 0.3s ease;
+    }
+    .search-icon {
+        cursor: pointer;
+        color: var(--text-light);
+        font-size: 1.2rem;
+        background: rgba(255,255,255,0.05);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: var(--transition);
+    }
+    .search-icon:hover {
+        color: var(--accent-neon);
+        border-color: var(--accent-neon);
+        background: rgba(0, 255, 85, 0.05);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    .empty-state h3 {
+        color: var(--text-light);
+        margin-bottom: 15px;
+        font-size: 1.8rem;
+    }
+    .checkbox-cell {
+        width: 40px;
+        text-align: center;
+    }
+    .checkbox-custom {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--accent-neon);
+    }
+</style>
+
+<div class="dashboard-header flex-between" style="margin-bottom: 30px;">
+    <div>
+        <p style="color: var(--accent-neon); font-weight: 600;">MANAGEMENT</p>
+        <h1>Your Products</h1>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="search-container">
+            <span class="search-icon" onclick="toggleSearch()" title="Search Products">🔍</span>
+            <input type="text" id="searchInput" class="form-control search-bar" placeholder="Search products..." onkeyup="filterProducts()">
+        </div>
+        <button class="btn btn-primary" onclick="openAddModal()">+ Insert New Product</button>
+        <button class="btn" style="background-color: rgba(255,255,255,0.1); color: var(--text-light);" onclick="startSelectedAnalysis()">Start Analysis</button>
+    </div>
+</div>
+
+<div class="table-container">
+    <table class="custom-table" id="productsTable">
+        <thead>
+            <tr>
+                <th class="checkbox-cell"><input type="checkbox" class="checkbox-custom" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                <th>Product Name</th>
+                <th>Brand</th>
+                <th>Category</th>
+                <th>Current Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr class="product-row" data-id="{{ product.user_product_id }}">
+                <td class="checkbox-cell"><input type="checkbox" class="product-checkbox checkbox-custom" value="{{ product.user_product_id }}"></td>
+                <td class="prod-name">
+                    <div class="flex-between">
+                        <span style="font-weight: 600; color: var(--accent-neon);">{{ product.product_name }}</span>
+                        <div class="action-icons-container">
+                            <span class="action-icon" onclick="openEditModal({{ product.user_product_id }}, '{{ product.product_name|escapejs }}', '{{ product.brand.brand_name|escapejs }}', '{{ product.category.category_name|escapejs }}', '{{ product.current_price|default:""|escapejs }}')" title="Edit">✎</span>
+                            <span class="action-icon delete-icon" onclick="deleteProduct({{ product.user_product_id }})" title="Delete">🗑</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="prod-brand" style="color: var(--text-muted);">{{ product.brand.brand_name }}</td>
+                <td class="prod-category">
+                    <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem;">
+                        {{ product.category.category_name }}
+                    </span>
+                </td>
+                <td class="prod-price font-weight-bold">{% if product.current_price %}${{ product.current_price }}{% else %}-{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">📦</div>
+                        <h3>Create your first product!</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 1.1rem;">Your product list is currently empty. Add products to start analyzing competitive pricing.</p>
+                        <button class="btn btn-primary" onclick="openAddModal()">Insert New Product</button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Native Custom Modal -->
+<div class="custom-modal-overlay" id="productModal">
+    <div class="custom-modal">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle">Insert New Product</h2>
+        
+        <form id="productForm" novalidate>
+            <input type="hidden" id="productId">
+            
+            <div class="form-group">
+                <label>Product Name <span style="color:#ff3366">*</span></label>
+                <input type="text" class="form-control" id="productName" required>
+                <div class="invalid-feedback">Product Name is required.</div>
+            </div>
+            
+            <div class="form-group" style="position: relative;">
+                <label>Brand <span style="color:#ff3366">*</span></label>
+                <input type="text" class="form-control" id="brandName" oninput="fetchSuggestions('brand', this.value)" autocomplete="off" required>
+                <div class="invalid-feedback">Brand is required.</div>
+                <div id="brandSuggestions" class="autocomplete-items"></div>
+                <small id="brandHelp" style="display:none; color: #ffcc00; margin-top: 5px; font-size: 0.85rem;">Brand not found. It will be created.</small>
+            </div>
+            
+            <div class="form-group" style="position: relative;">
+                <label>Category <span style="color:#ff3366">*</span></label>
+                <input type="text" class="form-control" id="categoryName" oninput="fetchSuggestions('category', this.value)" autocomplete="off" required>
+                <div class="invalid-feedback">Category is required.</div>
+                <div id="categorySuggestions" class="autocomplete-items"></div>
+                <small id="categoryHelp" style="display:none; color: #ffcc00; margin-top: 5px; font-size: 0.85rem;">Please select an existing category.</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Current Price ($)</label>
+                <input type="number" step="0.01" min="0" class="form-control" id="currentPrice">
+                <div class="invalid-feedback">Price cannot be negative.</div>
+            </div>
+            
+            <!-- Hidden field for model number compatibility if needed by backend -->
+            <input type="hidden" id="modelNumber" value="">
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Security CSRF Setup
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken') || '';
+
+    // Search Toggle Logic
+    function toggleSearch() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput.style.display === 'block') {
+            searchInput.style.display = 'none';
+            searchInput.value = '';
+            filterProducts(); // Reset filter when closing
+        } else {
+            searchInput.style.display = 'block';
+            searchInput.focus();
+        }
+    }
+
+    // Modal Logic
+    const modal = document.getElementById('productModal');
+    
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    // Close modal if user clicks outside of it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+
+    function openAddModal() {
+        document.getElementById('modalTitle').innerText = 'Insert New Product';
+        const form = document.getElementById('productForm');
+        form.reset();
+        form.classList.remove('was-validated');
+        document.getElementById('productId').value = '';
+        document.getElementById('brandHelp').style.display = 'none';
+        document.getElementById('categoryHelp').style.display = 'none';
+        modal.style.display = 'flex';
+    }
+
+    function openEditModal(id, name, brand, cat, price) {
+        document.getElementById('modalTitle').innerText = 'Edit Product';
+        const form = document.getElementById('productForm');
+        form.classList.remove('was-validated');
+        document.getElementById('productId').value = id;
+        document.getElementById('productName').value = name;
+        document.getElementById('brandName').value = brand;
+        document.getElementById('categoryName').value = cat;
+        document.getElementById('currentPrice').value = price !== '-' && price !== 'None' ? price : '';
+        document.getElementById('brandHelp').style.display = 'none';
+        document.getElementById('categoryHelp').style.display = 'none';
+        modal.style.display = 'flex';
+    }
+
+    // API Integration
+    async function saveProduct() {
+        const form = document.getElementById('productForm');
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        const id = document.getElementById('productId').value;
+        const url = id ? `/api/edit-user-product/${id}/` : '/api/add-user-product/';
+        
+        const data = {
+            product_name: document.getElementById('productName').value.trim(),
+            brand: document.getElementById('brandName').value.trim(),
+            category: document.getElementById('categoryName').value.trim(),
+            model_number: '', // Removed from UI, sent empty
+            current_price: document.getElementById('currentPrice').value.trim()
+        };
+
+        try {
+            const response = await fetch(url, {
+                method: id ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(data)
+            });
+
+            if(response.ok) {
+                location.reload();
+            } else {
+                const err = await response.json();
+                alert('Error: ' + (err.error || 'Failed to save product.'));
+            }
+        } catch(e) {
+            alert('Request failed.');
+        }
+    }
+
+    async function deleteProduct(id) {
+        if(!confirm('Are you sure you want to delete this product?')) return;
+        try {
+            const response = await fetch(`/api/delete-user-product/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            });
+            if(response.ok) {
+                location.reload();
+            } else {
+                alert('Error deleting product.');
+            }
+        } catch(e) {
+            alert('Request failed.');
+        }
+    }
+
+    // Table Interactions
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        for(let i=0; i<checkboxes.length; i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+
+    function filterProducts() {
+        const input = document.getElementById("searchInput").value.toUpperCase();
+        const trs = document.getElementById("productsTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        for (let i = 0; i < trs.length; i++) {
+            if(trs[i].children.length < 5) continue; // Skip empty row message
+            const tds = trs[i].getElementsByTagName("td");
+            let found = false;
+            for(let j=1; j<4; j++) { // Check name, brand, category
+                if(tds[j] && tds[j].innerText.toUpperCase().indexOf(input) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+            trs[i].style.display = found ? "" : "none";
+        }
+    }
+
+    // Autocomplete Logic
+    let searchTimeout;
+    async function fetchSuggestions(type, query) {
+        clearTimeout(searchTimeout);
+        const container = document.getElementById(type + 'Suggestions');
+        const helpText = document.getElementById(type + 'Help');
+        if(query.trim().length < 1) {
+            container.innerHTML = '';
+            helpText.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(async () => {
+            try {
+                const url = type === 'brand' ? `/brand-suggestions/?q=${query}` : `/category-suggestions/?q=${query}`;
+                const response = await fetch(url);
+                if(response.ok) {
+                    const data = await response.json();
+                    container.innerHTML = '';
+                    if(data.length === 0) {
+                        helpText.style.display = 'block';
+                    } else {
+                        helpText.style.display = 'none';
+                        let exactMatch = false;
+                        data.forEach(item => {
+                            if(item.toLowerCase() === query.toLowerCase()) exactMatch = true;
+                            const div = document.createElement('div');
+                            div.innerHTML = `<strong>${item.substring(0, query.length)}</strong>${item.substring(query.length)}`;
+                            div.onclick = function() {
+                                document.getElementById(type + 'Name').value = item;
+                                container.innerHTML = '';
+                                helpText.style.display = 'none';
+                            };
+                            container.appendChild(div);
+                        });
+                        if(!exactMatch) {
+                            helpText.style.display = 'block';
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error('Failed to fetch suggestions');
+            }
+        }, 300);
+    }
+
+    document.addEventListener('click', function (e) {
+        if(e.target.id !== 'brandName') document.getElementById('brandSuggestions').innerHTML = '';
+        if(e.target.id !== 'categoryName') document.getElementById('categorySuggestions').innerHTML = '';
+    });
+
+    function startSelectedAnalysis() {
+        const checked = document.querySelectorAll('.product-checkbox:checked');
+        if(checked.length === 0) {
+            alert('Please select at least one product for analysis.');
+            return;
+        }
+        alert('Starting analysis for ' + checked.length + ' products... (Feature in development)');
+    }
+</script>
+    </main>
+</div>
+{% endblock %}

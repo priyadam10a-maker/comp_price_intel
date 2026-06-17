@@ -1,84 +1,36 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      {% block title %}
-        CPI
-      {% endblock %}
+      {% block title %}CPI | Competitive Price Intelligence{% endblock %}
     </title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"  rel="stylesheet" />
-  </head>
-  <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-
-      <a class="navbar-brand"
-        href="{% url 'home' %}">
-
-          Competitive Price Intelligence
-
-      </a>
-
-      <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarNav">
-
-          <span class="navbar-toggler-icon"></span>
-
-      </button>
-
-      <div
-          class="collapse navbar-collapse"
-          id="navbarNav">
-
-          <ul class="navbar-nav ml-auto">
-
-              <li class="nav-item">
-
-                  <a
-                      class="nav-link"
-                      href="{% url 'home' %}">
-
-                      Home
-
-                  </a>
-
-              </li>
-
-              <li class="nav-item">
-
-                  <a
-                      class="nav-link"
-                      href="{% url 'dashboard' %}">
-
-                      Dashboard
-
-                  </a>
-
-              </li>
-
-              <li class="nav-item">
-
-                  <a
-                      class="nav-link"
-                      href="{% url 'logout' %}">
-
-                      Logout
-
-                  </a>
-
-              </li>
-
-          </ul>
-
-      </div>
-
-  </nav>
-    <div class="container mt-4">{% block content %} {% endblock %}</div>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js" ></script>
-  </body>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block layout %}
+    <!-- Default Layout for pages like Home -->
+    <nav class="navbar flex-between" style="padding: 30px 5%;">
+        <a href="{% url 'home' %}" class="brand">Competitive Price Intelligence</a>
+        <ul class="nav-links">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'logout' %}" class="btn btn-primary" style="padding: 8px 20px;">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Sign in</a></li>
+                <li><a href="{% url 'register' %}" class="btn btn-primary" style="padding: 8px 20px;">Sign up</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    {% endblock %}
+    
+    {% block extra_js %}{% endblock %}
+</body>
 </html>

@@ -1,97 +1,45 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}
-Register
-{% endblock %}
+{% block title %}Register | TEKTIAS NETWORK{% endblock %}
 
 {% block content %}
-
-<div class="row justify-content-center">
-
-    <div class="col-md-6">
-
-        <div class="card">
-
-            <div class="card-header">
-                <h3>Register</h3>
+<div class="auth-container">
+    <div class="auth-card" style="max-width: 600px;">
+        <h2 class="text-neon">Welcome! Create Your Account</h2>
+        
+        {% if error %}
+            <div style="background-color: rgba(255,0,0,0.1); border-left: 4px solid red; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+                {{ error }}
             </div>
-
-            <div class="card-body">
-
-                {% if error %}
-                    <div class="alert alert-danger">
-                        {{ error }}
-                    </div>
-                {% endif %}
-
-                <form method="POST">
-
-                    {% csrf_token %}
-
-                    <div class="form-group">
-
-                        <label>Full Name</label>
-
-                        <input
-                            type="text"
-                            name="full_name"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Email</label>
-
-                        <input
-                            type="email"
-                            name="email"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Password</label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label>Confirm Password</label>
-
-                        <input
-                            type="password"
-                            name="password_confirm"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-                    <button
-                        type="submit"
-                        class="btn btn-success">
-
-                        Register
-
-                    </button>
-
-                </form>
-
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name" class="form-control" placeholder="John Doe" required>
             </div>
-
-        </div>
-
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="name@example.com" required>
+            </div>
+            <div style="display: flex; gap: 20px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Confirm Password</label>
+                    <input type="password" name="password_confirm" class="form-control" placeholder="Confirm password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Sign up</button>
+            
+            <div class="auth-links">
+                Already have an account? <a href="{% url 'login' %}">Sign in here</a>
+            </div>
+        </form>
     </div>
-
 </div>
-
 {% endblock %}
