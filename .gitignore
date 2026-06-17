@@ -23,3 +23,5 @@ db.sqlite3
 
 # Migration cache
 **/__pycache__/
+
+myenv/
