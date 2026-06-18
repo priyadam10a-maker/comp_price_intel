@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block title %}Competitor Analysis | Competitive Price Intelligence{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table-container {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    overflow-x: auto;
+  }
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-light);
+    font-size: 0.92rem;
+  }
+  .custom-table th {
+    text-align: left;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .custom-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  .custom-table tbody tr:last-child td { border-bottom: none; }
+  .custom-table tbody tr:hover {
+    background: rgba(0,255,85,0.03);
+  }
+
+  /* Score pill */
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .score-high  { background: rgba(0,255,85,0.15);  color: #00ff55; }
+  .score-mid   { background: rgba(255,200,0,0.15);  color: #ffc800; }
+  .score-low   { background: rgba(255,60,60,0.15);  color: #ff3c3c; }
+
+  /* Status badge */
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .status-matched  { background: rgba(0,255,85,0.12);  color: #00ff55; }
+  .status-pending  { background: rgba(255,200,0,0.12);  color: #ffc800; }
+  .status-rejected { background: rgba(255,60,60,0.12);  color: #ff3c3c; }
+
+  /* Price chips */
+  .price-listed   { color: var(--text-light); font-weight: 600; }
+  .price-discount { color: #00ff55; font-weight: 700; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+  }
+  .empty-state .emoji { font-size: 4rem; margin-bottom: 20px; }
+  .empty-state h3 { color: var(--text-light); margin-bottom: 12px; font-size: 1.6rem; }
+  .empty-state p  { color: var(--text-muted); font-size: 1rem; }
+
+  /* Platform tag */
+  .platform-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* Summary banner */
+  .page-summary {
+    background: linear-gradient(135deg, rgba(0,255,85,0.05), rgba(0,255,85,0.01));
+    border: 1px solid rgba(0,255,85,0.1);
+    border-radius: 16px;
+    padding: 22px 28px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .page-summary .summary-icon { font-size: 2rem; }
+  .page-summary h3 { color: var(--accent-neon); font-size: 1rem; margin-bottom: 4px; }
+  .page-summary p  { color: var(--text-muted); font-size: 0.88rem; margin: 0; }
+</style>
+{% endblock %}
+
+{% block layout %}
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="{% url 'home' %}" class="brand">CPI</a>
+    <ul class="sidebar-nav">
+      <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+      <li><a href="{% url 'products' %}">🛍️ Products</a></li>
+      <li><a href="{% url 'pricing_recommendations' %}">📈 Analytics</a></li>
+      <li><a href="{% url 'scrape_logs' %}">📋 Scrape Logs</a></li>
+      <li><a href="{% url 'your_products' %}">📦 My Products</a></li>
+      <li style="margin-top:auto; padding-top:30px;"><a href="{% url 'logout' %}">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-content">
+
+    <div class="dashboard-header flex-between">
+      <div>
+        <p style="color:var(--accent-neon); font-weight:700; font-size:0.78rem; letter-spacing:1.2px;">INTELLIGENCE</p>
+        <h1>Competitor Analysis</h1>
+      </div>
+      <div style="color:var(--text-muted); font-size:0.9rem;">
+        {{ matches|length }} match{{ matches|length|pluralize:"es" }} found
+      </div>
+    </div>
+
+    <!-- Summary banner -->
+    <div class="page-summary">
+      <div class="summary-icon">🔍</div>
+      <div>
+        <h3>Product Matching Engine</h3>
+        <p>Showing all product matches between your catalogue and competitor listings. Similarity score ≥ 80 = strong match.</p>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      {% if matches %}
+      <table class="custom-table" id="competitorTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Your Product</th>
+            <th>Competitor Listing</th>
+            <th>Platform</th>
+            <th>Listed Price</th>
+            <th>Discount Price</th>
+            <th>Similarity Score</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for match in matches %}
+          <tr>
+            <td style="color:var(--text-muted);">{{ forloop.counter }}</td>
+            <td>
+              <span style="font-weight:600; color:var(--accent-neon);">
+                {{ match.product.product_name }}
+              </span>
+              {% if match.product.brand %}
+              <br><small style="color:var(--text-muted);">{{ match.product.brand }}</small>
+              {% endif %}
+            </td>
+            <td>
+              {% if match.competitor_product.platform_product_url %}
+                <a href="{{ match.competitor_product.platform_product_url }}" target="_blank"
+                   style="color:var(--text-light); font-weight:500;"
+                   title="{{ match.competitor_product.platform_product_url }}">
+                  {{ match.competitor_product.platform_product_name|default:"—" }}
+                </a>
+              {% else %}
+                <span style="color:var(--text-light);">{{ match.competitor_product.platform_product_name|default:"—" }}</span>
+              {% endif %}
+              {% if match.competitor_product.stock_status %}
+              <br><small style="color:var(--text-muted);">{{ match.competitor_product.stock_status }}</small>
+              {% endif %}
+            </td>
+            <td>
+              <span class="platform-tag">Platform {{ match.competitor_product.platform_id }}</span>
+            </td>
+            <td class="price-listed">
+              {% if match.competitor_product.listed_price %}
+                ${{ match.competitor_product.listed_price }}
+              {% else %}—{% endif %}
+            </td>
+            <td class="price-discount">
+              {% if match.competitor_product.discount_price %}
+                ${{ match.competitor_product.discount_price }}
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if match.similarity_score %}
+                {% if match.similarity_score >= 80 %}
+                  <span class="score-pill score-high">{{ match.similarity_score }}%</span>
+                {% elif match.similarity_score >= 50 %}
+                  <span class="score-pill score-mid">{{ match.similarity_score }}%</span>
+                {% else %}
+                  <span class="score-pill score-low">{{ match.similarity_score }}%</span>
+                {% endif %}
+              {% else %}
+                <span style="color:var(--text-muted);">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if match.match_status == "Matched" %}
+                <span class="status-badge status-matched">Matched</span>
+              {% elif match.match_status == "Rejected" %}
+                <span class="status-badge status-rejected">Rejected</span>
+              {% else %}
+                <span class="status-badge status-pending">Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <div class="emoji">🔍</div>
+        <h3>No competitor matches yet</h3>
+        <p>Run a competitive analysis to discover how your products compare on competitor platforms.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+{% endblock %}

@@ -1,17 +1,20 @@
 {% extends 'base.html' %}
-{% block title %}Your Products | TEKTIAS NETWORK{% endblock %}
+{% block title %}Your Products | Competitive Price Intelligence{% endblock %}
 
 {% block layout %}
 <div class="dashboard-layout">
     <!-- Sidebar -->
     <aside class="sidebar">
-        <a href="{% url 'home' %}" class="brand">Competitive Price Intelligence</a>
-        <ul class="sidebar-nav">
-            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li><a href="{% url 'your_products' %}" class="active">Your Products</a></li>
-            <li><a href="{% url 'logout' %}">Logout</a></li>
-        </ul>
-    </aside>
+    <a href="{% url 'home' %}" class="brand">CPI</a>
+    <ul class="sidebar-nav">
+      <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+      <li><a href="{% url 'products' %}">🛍️ Products</a></li>
+      <li><a href="{% url 'pricing_recommendations' %}">📈 Analytics</a></li>
+      <li><a href="{% url 'scrape_logs' %}">📋 Scrape Logs</a></li>
+      <li><a href="{% url 'your_products' %}" class="active">📦 My Products</a></li>
+      <li style="margin-top:auto; padding-top:30px;"><a href="{% url 'logout' %}">🚪 Logout</a></li>
+    </ul>
+  </aside>
 
     <!-- Main Content -->
     <main class="dashboard-content">
@@ -535,13 +538,37 @@
         if(e.target.id !== 'categoryName') document.getElementById('categorySuggestions').innerHTML = '';
     });
 
-    function startSelectedAnalysis() {
+    async function startSelectedAnalysis() {
         const checked = document.querySelectorAll('.product-checkbox:checked');
         if(checked.length === 0) {
             alert('Please select at least one product for analysis.');
             return;
         }
-        alert('Starting analysis for ' + checked.length + ' products... (Feature in development)');
+        
+        const productIds = Array.from(checked).map(cb => parseInt(cb.value));
+        
+        try {
+            const response = await fetch('/api/start-analysis/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ product_ids: productIds })
+            });
+
+            if (response.ok) {
+                // Wait a brief moment to allow the background thread to finish the DB insert
+                setTimeout(() => {
+                    window.location.href = '/pricing-recommendations/';
+                }, 1000);
+            } else {
+                const err = await response.json();
+                alert('Error starting analysis: ' + (err.error || 'Unknown error'));
+            }
+        } catch(e) {
+            alert('Request failed. Please try again later.');
+        }
     }
 </script>
     </main>

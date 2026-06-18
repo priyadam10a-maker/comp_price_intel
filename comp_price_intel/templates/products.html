@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% block title %}Products Catalog | Competitive Price Intelligence{% endblock %}
+
+{% block layout %}
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+    <a href="{% url 'home' %}" class="brand">CPI</a>
+    <ul class="sidebar-nav">
+      <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+      <li><a href="{% url 'products' %}" class="active">🛍️ Products</a></li>
+      <li><a href="{% url 'pricing_recommendations' %}">📈 Analytics</a></li>
+      <li><a href="{% url 'scrape_logs' %}">📋 Scrape Logs</a></li>
+      <li><a href="{% url 'your_products' %}">📦 My Products</a></li>
+      <li style="margin-top:auto; padding-top:30px;"><a href="{% url 'logout' %}">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-content">
+
+<style>
+    /* Table Styles */
+    .table-container {
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        overflow-x: auto;
+    }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--text-light);
+    }
+    .custom-table th {
+        text-align: left;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+    .custom-table td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+    }
+    .custom-table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Search Toggle */
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .search-bar {
+        display: none;
+        width: 300px;
+        transition: width 0.3s ease;
+    }
+    .search-icon {
+        cursor: pointer;
+        color: var(--text-light);
+        font-size: 1.2rem;
+        background: rgba(255,255,255,0.05);
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: var(--transition);
+    }
+    .search-icon:hover {
+        color: var(--accent-neon);
+        border-color: var(--accent-neon);
+        background: rgba(0, 255, 85, 0.05);
+    }
+    
+    /* Filters */
+    .filter-container {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .filter-container input {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    .empty-state h3 {
+        color: var(--text-light);
+        margin-bottom: 15px;
+        font-size: 1.8rem;
+    }
+</style>
+
+<div class="dashboard-header flex-between" style="margin-bottom: 30px;">
+    <div>
+        <p style="color: var(--accent-neon); font-weight: 600;">CATALOG</p>
+        <h1>Products</h1>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="search-container">
+            <span class="search-icon" onclick="toggleSearch()" title="Search Products">🔍</span>
+            <input type="text" id="searchInput" class="form-control search-bar" placeholder="Search products locally..." onkeyup="filterLocalProducts()">
+        </div>
+    </div>
+</div>
+
+<form class="filter-container" method="POST">
+    {% csrf_token %}
+    <input type="text" name="brand" placeholder="Filter by Brand" value="{{ request.POST.brand }}">
+    <input type="text" name="category" placeholder="Filter by Category" value="{{ request.POST.category }}">
+    <button type="submit" class="btn btn-primary" style="padding: 8px 20px;">Filter</button>
+</form>
+
+<div class="table-container">
+    <table class="custom-table" id="productsTable">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Brand</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr class="product-row">
+                <td class="prod-name">
+                    <span style="font-weight: 600; color: var(--accent-neon);">{{ product.product_name }}</span>
+                </td>
+                <td class="prod-brand" style="color: var(--text-muted);">{{ product.brand.brand_name }}</td>
+                <td class="prod-category">
+                    <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem;">
+                        {{ product.category.category_name }}
+                    </span>
+                </td>
+                <td class="prod-price font-weight-bold">{% if product.current_price %}₹{{ product.current_price }}{% else %}-{% endif %}</td>
+                <td>
+                    <a href="{% url 'product_detail' product.product_id %}" class="btn" style="background: rgba(0,255,85,0.1); color: var(--accent-neon); padding: 5px 15px; font-size: 0.85rem;">View Details</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">📦</div>
+                        <h3>No Products Found</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 1.1rem;">Try adjusting your filters or search criteria.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function toggleSearch() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput.style.display === 'block') {
+            searchInput.style.display = 'none';
+            searchInput.value = '';
+            filterLocalProducts();
+        } else {
+            searchInput.style.display = 'block';
+            searchInput.focus();
+        }
+    }
+
+    function filterLocalProducts() {
+        const input = document.getElementById("searchInput").value.toUpperCase();
+        const trs = document.getElementById("productsTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        for (let i = 0; i < trs.length; i++) {
+            if(trs[i].children.length < 5) continue;
+            const tds = trs[i].getElementsByTagName("td");
+            let found = false;
+            for(let j=0; j<3; j++) {
+                if(tds[j] && tds[j].innerText.toUpperCase().indexOf(input) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+            trs[i].style.display = found ? "" : "none";
+        }
+    }
+</script>
+    </main>
+</div>
+{% endblock %}

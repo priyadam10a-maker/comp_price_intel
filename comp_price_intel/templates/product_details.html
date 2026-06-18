@@ -1,126 +1,183 @@
 {% extends 'base.html' %}
+{% block title %}{{ product.product_name }} | Competitive Price Intelligence{% endblock %}
 
-{% block title %}
-Product Details
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .card-dark {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--text-light);
+    }
+    .custom-table th {
+        text-align: left;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+    }
+    .custom-table td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .platform-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .bg-amazon { background: rgba(255, 153, 0, 0.2); color: #ff9900; }
+    .bg-flipkart { background: rgba(40, 116, 240, 0.2); color: #2874f0; }
+    .bg-toolsvilla { background: rgba(0, 204, 102, 0.2); color: #00cc66; }
+    .bg-industrybuying { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+</style>
 {% endblock %}
 
-{% block content %}
+{% block layout %}
+<div class="dashboard-layout">
+    <aside class="sidebar">
+    <a href="{% url 'home' %}" class="brand">CPI</a>
+    <ul class="sidebar-nav">
+      <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+      <li><a href="{% url 'products' %}" class="active">🛍️ Products</a></li>
+      <li><a href="{% url 'pricing_recommendations' %}">📈 Analytics</a></li>
+      <li><a href="{% url 'scrape_logs' %}">📋 Scrape Logs</a></li>
+      <li><a href="{% url 'your_products' %}">📦 My Products</a></li>
+      <li style="margin-top:auto; padding-top:30px;"><a href="{% url 'logout' %}">🚪 Logout</a></li>
+    </ul>
+  </aside>
 
-<div class="row justify-content-center">
-
-    <div class="col-md-8">
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <h3>
-                    Product Details
-                </h3>
-
+    <main class="dashboard-content">
+        <div class="dashboard-header flex-between" style="margin-bottom: 30px;">
+            <div>
+                <p style="color: var(--text-muted); font-weight: 600;">{{ product.brand.brand_name }} > {{ product.category.category_name }}</p>
+                <h1 style="color: var(--accent-neon);">{{ product.product_name }}</h1>
             </div>
-
-            <div class="card-body">
-
-                <table class="table table-bordered">
-
-                    <tr>
-                        <th width="30%">
-                            Product Name
-                        </th>
-
-                        <td>
-                            {{ product.product_name }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>
-                            Brand
-                        </th>
-
-                        <td>
-                            {{ product.brand.brand_name }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>
-                            Category
-                        </th>
-
-                        <td>
-                            {{ product.category.category_name }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>
-                            Current Price
-                        </th>
-
-                        <td>
-                            ₹{{ product.current_price }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>
-                            Average Rating
-                        </th>
-
-                        <td>
-                            {{ product.average_rating }}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>
-                            Total Reviews
-                        </th>
-
-                        <td>
-                            {{ product.total_reviews }}
-                        </td>
-                    </tr>
-
-                </table>
-
-                <form
-                    action="{% url 'start_scraping' %}"
-                    method="POST">
-
+            <div>
+                <a href="{% url 'products' %}" class="btn" style="background: rgba(255,255,255,0.1); color: var(--text-light); margin-right: 10px;">&larr; Back</a>
+                <form action="{% url 'start_scraping' %}" method="POST" style="display:inline;">
                     {% csrf_token %}
-
-                    <input
-                        type="hidden"
-                        name="product_id"
-                        value="{{ product.product_id }}">
-
-                    <button
-                        type="submit"
-                        class="btn btn-success">
-
-                        Start Scraping
-
-                    </button>
-
-                    <a
-                        href="{% url 'search_product' %}"
-                        class="btn btn-secondary">
-
-                        Back
-
-                    </a>
-
+                    <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                    <button type="submit" class="btn btn-primary">Refresh Data</button>
                 </form>
-
             </div>
-
         </div>
 
-    </div>
+        <div class="grid-2">
+            <!-- Price Comparison -->
+            <div class="card-dark">
+                <h3 style="margin-bottom: 20px; color: var(--text-light);">Price Comparison ({{ competitors|length }} Platforms)</h3>
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Platform</th>
+                            <th>Listed Price</th>
+                            <th>Stock Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comp in competitors %}
+                        <tr>
+                            <td>
+                                <span class="platform-badge {% if comp.platform_id == 1 %}bg-amazon{% elif comp.platform_id == 2 %}bg-flipkart{% elif comp.platform_id == 3 %}bg-toolsvilla{% else %}bg-industrybuying{% endif %}">
+                                    {{ comp.platform_name }}
+                                </span>
+                            </td>
+                            <td style="font-weight: bold;">₹{{ comp.listed_price }}</td>
+                            <td style="color: {% if comp.stock_status == 'In Stock' %}#00ff55{% elif 'Low' in comp.stock_status %}#ffcc00{% else %}#ff3366{% endif %};">{{ comp.stock_status }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" style="text-align:center; padding: 20px; color: var(--text-muted);">No competitor data available. Click Refresh Data to scrape.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
+            <!-- Recommendations -->
+            <div class="card-dark">
+                <h3 style="margin-bottom: 20px; color: var(--text-light);">AI Recommendation</h3>
+                <div style="background: rgba(0,255,85,0.1); border-left: 4px solid var(--accent-neon); padding: 20px; border-radius: 8px;">
+                    <h4 style="color: var(--accent-neon); margin-bottom: 10px;">Recommended Strategy: Parity Pricing</h4>
+                    <p style="color: var(--text-light); line-height: 1.6;">
+                        Based on recent competitor movements and the average market rate across all tracked platforms, we recommend adopting a <strong>Parity Pricing</strong> strategy to closely match the current market average. This ensures you remain competitive without unnecessarily sacrificing profit margins.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Competitor Price Chart -->
+        <div class="card-dark" style="margin-top: 30px;">
+            <h3 style="margin-bottom: 20px; color: var(--text-light);">Competitor Price Analysis</h3>
+            <canvas id="priceHistoryChart" height="80"></canvas>
+        </div>
+
+    </main>
 </div>
 
+<script>
+    const ctx = document.getElementById('priceHistoryChart').getContext('2d');
+    
+    // Extract labels and data dynamically from the competitors context
+    const platformLabels = [];
+    const platformPrices = [];
+    
+    {% for comp in competitors %}
+        platformLabels.push("{{ comp.platform_name }}");
+        platformPrices.push({{ comp.listed_price }});
+    {% empty %}
+        platformLabels.push("No Data");
+        platformPrices.push(0);
+    {% endfor %}
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: platformLabels,
+            datasets: [{
+                label: 'Listed Price (₹)',
+                data: platformPrices,
+                backgroundColor: [
+                    'rgba(255, 153, 0, 0.6)',   // Amazon
+                    'rgba(40, 116, 240, 0.6)',  // Flipkart
+                    'rgba(0, 204, 102, 0.6)',   // Toolsvilla
+                    'rgba(220, 53, 69, 0.6)'    // Industry Buying
+                ],
+                borderColor: [
+                    'rgba(255, 153, 0, 1)',
+                    'rgba(40, 116, 240, 1)',
+                    'rgba(0, 204, 102, 1)',
+                    'rgba(220, 53, 69, 1)'
+                ],
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: 'rgba(255, 255, 255, 0.5)' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

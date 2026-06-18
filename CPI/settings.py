@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'CPI.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'price_intelligence_db',
+        'NAME': 'backend_price_intelligence_db',
         'USER': 'root',
         'PASSWORD': 'priyadam2005',
         'HOST': 'localhost',

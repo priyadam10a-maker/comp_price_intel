@@ -1,59 +1,209 @@
 {% extends 'base.html' %}
-{% block title %}Dashboard | TEKTIAS NETWORK{% endblock %}
+{% block title %}Dashboard | Competitive Price Intelligence{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Stat Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    margin-bottom: 36px;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    padding: 28px 26px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,255,85,0.25);
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: var(--accent-neon);
+    opacity: 0.04;
+  }
+  .stat-icon {
+    font-size: 1.8rem;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--accent-neon);
+    line-height: 1;
+  }
+  .stat-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* Quick-action cards */
+  .action-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-bottom: 36px;
+  }
+  .action-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    padding: 30px;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+  }
+  .action-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,255,85,0.2);
+  }
+  .action-card-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 18px;
+  }
+  .action-card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+    color: var(--accent-neon);
+  }
+  .action-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* Insights banner */
+  .insights-banner {
+    background: linear-gradient(135deg, rgba(0,255,85,0.06) 0%, rgba(0,255,85,0.02) 100%);
+    border: 1px solid rgba(0,255,85,0.12);
+    border-radius: 18px;
+    padding: 30px 34px;
+    margin-bottom: 36px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .insights-banner-icon {
+    font-size: 2.4rem;
+    flex-shrink: 0;
+  }
+  .insights-banner h2 {
+    font-size: 1.25rem;
+    color: var(--accent-neon);
+    margin-bottom: 6px;
+  }
+  .insights-banner p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+</style>
+{% endblock %}
 
 {% block layout %}
 <div class="dashboard-layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <a href="{% url 'home' %}" class="brand">Competitive Price Intelligence</a>
-        <ul class="sidebar-nav">
-            <li><a href="{% url 'dashboard' %}" class="active">Dashboard</a></li>
-            <li><a href="{% url 'your_products' %}">Your Products</a></li>
-            <li><a href="{% url 'logout' %}">Logout</a></li>
-        </ul>
-    </aside>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="{% url 'home' %}" class="brand">CPI</a>
+    <ul class="sidebar-nav">
+      <li><a href="{% url 'dashboard' %}" class="active">📊 Dashboard</a></li>
+      <li><a href="{% url 'products' %}">🛍️ Products</a></li>
+      <li><a href="{% url 'pricing_recommendations' %}">📈 Analytics</a></li>
+      <li><a href="{% url 'scrape_logs' %}">📋 Scrape Logs</a></li>
+      <li><a href="{% url 'your_products' %}">📦 My Products</a></li>
+      <li style="margin-top:auto; padding-top:30px;"><a href="{% url 'logout' %}">🚪 Logout</a></li>
+    </ul>
+  </aside>
 
-    <!-- Main Content -->
-    <main class="dashboard-content">
-        <div class="dashboard-header flex-between">
-            <div>
-                <p style="color: var(--accent-neon); font-weight: 600;">OVERVIEW</p>
-                <h1>Welcome, {{ user_name }}</h1>
-            </div>
-        </div>
+  <!-- Main Content -->
+  <main class="dashboard-content">
+    <div class="dashboard-header flex-between">
+      <div>
+        <p style="color: var(--accent-neon); font-weight: 600; letter-spacing:1px; font-size:0.8rem;">OVERVIEW</p>
+        <h1>Welcome back, {{ user_name }} 👋</h1>
+      </div>
+    </div>
 
-        <div class="row">
-            <!-- Insights -->
-            <div class="card" style="width: 100%;">
-                <h2>Insights & Trends</h2>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">Competitor pricing trends, analysis history, and market recommendations will appear here.</p>
-                <div style="background-color: rgba(0,0,0,0.2); padding: 40px; border-radius: 10px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
-                    <span style="color: var(--text-muted);">No recent analysis history available.</span>
-                </div>
-            </div>
-        </div>
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">📦</span>
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value">{{ total_products }}</div>
+        <div class="stat-sub">Products you are tracking</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🔍</span>
+        <div class="stat-label">Competitors Tracked</div>
+        <div class="stat-value">{{ competitors_tracked }}</div>
+        <div class="stat-sub">Across all platforms</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">💡</span>
+        <div class="stat-label">Recommendations</div>
+        <div class="stat-value">{{ recommendations_generated }}</div>
+        <div class="stat-sub">Pricing recommendations generated</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📈</span>
+        <div class="stat-label">Avg Demand Score</div>
+        <div class="stat-value">{{ avg_demand_score }}</div>
+        <div class="stat-sub">Market demand signal</div>
+      </div>
+    </div>
 
-        <div class="grid-3">
-            <!-- Start Analysis -->
-            <div class="card">
-                <div style="width: 40px; height: 40px; background-color: var(--accent-neon); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--bg-dark); font-weight: bold; margin-bottom: 20px;">
-                    ▶
-                </div>
-                <h2>Start Analysis</h2>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">Run a complete analysis on all your added projects to get the latest competitive pricing reports.</p>
-                <button class="btn btn-primary" style="width: 100%;" onclick="alert('Starting full analysis... (Feature in development)')">Start Full Analysis</button>
-            </div>
+    <!-- Insights Banner -->
+    <div class="insights-banner">
+      <div class="insights-banner-icon">⚡</div>
+      <div>
+        <h2>Insights &amp; Trends</h2>
+        <p>Use the sidebar to explore Competitor Analysis and Pricing Recommendations. Your analytics core is live and ready.</p>
+      </div>
+    </div>
 
-            <!-- Your Products -->
-            <div class="card">
-                <div style="width: 40px; height: 40px; background-color: var(--bg-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--bg-dark); font-weight: bold; margin-bottom: 20px;">
-                    📦
-                </div>
-                <h2>Your Products</h2>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">Manage your product list. Add new products, edit details, and select specific products for analysis.</p>
-                <a href="{% url 'your_products' %}" class="btn btn-primary" style="width: 100%; text-align: center;">Manage Products</a>
-            </div>
-        </div>
-    </main>
+    <!-- Quick Actions -->
+    <div class="action-cards">
+      <div class="action-card">
+        <div class="action-card-icon" style="background: rgba(0,255,85,0.12);">📦</div>
+        <h3>Your Products</h3>
+        <p>Manage your product list, add new products, edit details, and select products for analysis.</p>
+        <a href="{% url 'your_products' %}" class="btn btn-primary" style="width:100%; text-align:center; display:block;">Manage Products</a>
+      </div>
+      <div class="action-card">
+        <div class="action-card-icon" style="background: rgba(0,200,255,0.1);">🔍</div>
+        <h3>Competitor Analysis</h3>
+        <p>View how your products match against competitors across platforms with similarity scores.</p>
+        <a href="{% url 'competitor_analysis' %}" class="btn btn-primary" style="width:100%; text-align:center; display:block;">View Analysis</a>
+      </div>
+      <div class="action-card">
+        <div class="action-card-icon" style="background: rgba(255,180,0,0.1);">💡</div>
+        <h3>Pricing Recommendations</h3>
+        <p>AI-driven pricing strategy recommendations based on demand score, inventory, and competitor data.</p>
+        <a href="{% url 'pricing_recommendations' %}" class="btn btn-primary" style="width:100%; text-align:center; display:block;">View Recommendations</a>
+      </div>
+    </div>
+
+  </main>
 </div>
 {% endblock %}

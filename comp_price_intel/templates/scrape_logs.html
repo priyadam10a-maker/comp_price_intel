@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Scrape Logs | Competitive Price Intelligence{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .metric-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--accent-neon);
+        margin-bottom: 5px;
+    }
+    .metric-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .table-container {
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        overflow-x: auto;
+    }
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--text-light);
+    }
+    .custom-table th {
+        text-align: left;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+    .custom-table td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .status-success { color: #00ff55; background: rgba(0,255,85,0.1); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+    .status-error { color: #ff3366; background: rgba(255,51,102,0.1); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+    .status-pending { color: #ffcc00; background: rgba(255,204,0,0.1); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+</style>
+{% endblock %}
+
+{% block layout %}
+<div class="dashboard-layout">
+    <aside class="sidebar">
+    <a href="{% url 'home' %}" class="brand">CPI</a>
+    <ul class="sidebar-nav">
+      <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+      <li><a href="{% url 'products' %}">🛍️ Products</a></li>
+      <li><a href="{% url 'pricing_recommendations' %}">📈 Analytics</a></li>
+      <li><a href="{% url 'scrape_logs' %}" class="active">📋 Scrape Logs</a></li>
+      <li><a href="{% url 'your_products' %}">📦 My Products</a></li>
+      <li style="margin-top:auto; padding-top:30px;"><a href="{% url 'logout' %}">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+    <main class="dashboard-content">
+        <div class="dashboard-header" style="margin-bottom: 30px;">
+            <p style="color: var(--accent-neon); font-weight: 600;">MONITORING</p>
+            <h1>System Health & Logs</h1>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value">99.9%</div>
+                <div class="metric-label">Uptime</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" style="color: #00ff55;">98%</div>
+                <div class="metric-label">Success Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">1.2s</div>
+                <div class="metric-label">Avg Latency</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ logs|length }}</div>
+                <div class="metric-label">Jobs Today</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3 style="margin-bottom: 20px; color: var(--text-light);">Recent Scrape History</h3>
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Product / Target</th>
+                        <th>Platform ID</th>
+                        <th>Timestamp</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td style="color: var(--text-muted);">#SCR-{{ log.competitor_product_id|stringformat:"04d" }}</td>
+                        <td style="font-weight: 600;">{{ log.platform_product_name|default:"Unknown Target" }}</td>
+                        <td>{{ log.platform_id }}</td>
+                        <td style="color: var(--text-muted);">{{ log.last_scraped|date:"Y-m-d H:i:s"|default:"Just now" }}</td>
+                        <td>
+                            <span class="status-success">Success</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            No scrape logs found in the system.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}

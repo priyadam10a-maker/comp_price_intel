@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% block title %}Pricing Recommendations | Competitive Price Intelligence{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table-container {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    overflow-x: auto;
+  }
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-light);
+    font-size: 0.92rem;
+  }
+  .custom-table th {
+    text-align: left;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .custom-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  .custom-table tbody tr:last-child td { border-bottom: none; }
+  .custom-table tbody tr:hover { background: rgba(0,255,85,0.03); }
+
+  /* Strategy badge */
+  .strategy-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .strategy-penetration  { background: rgba(0,200,255,0.12); color: #00c8ff; }
+  .strategy-skimming     { background: rgba(255,100,0,0.12);  color: #ff6400; }
+  .strategy-competitive  { background: rgba(0,255,85,0.12);   color: #00ff55; }
+  .strategy-premium      { background: rgba(180,0,255,0.12);  color: #b400ff; }
+  .strategy-default      { background: rgba(255,255,255,0.07); color: var(--text-muted); }
+
+  /* Demand score bar */
+  .demand-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .demand-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    min-width: 60px;
+  }
+  .demand-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #00ff55, #00cc44);
+  }
+  .demand-val { font-size: 0.82rem; font-weight: 700; color: var(--accent-neon); white-space: nowrap; }
+
+  /* Price change arrow */
+  .price-up   { color: #ff3c3c; }
+  .price-down { color: #00ff55; }
+  .price-same { color: var(--text-muted); }
+
+  /* Reason text */
+  .reason-text {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    max-width: 260px;
+    line-height: 1.5;
+  }
+
+  /* Inventory level pill */
+  .inv-low  { color: #ff3c3c; }
+  .inv-mid  { color: #ffc800; }
+  .inv-high { color: #00ff55; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+  }
+  .empty-state .emoji { font-size: 4rem; margin-bottom: 20px; }
+  .empty-state h3 { color: var(--text-light); margin-bottom: 12px; font-size: 1.6rem; }
+  .empty-state p  { color: var(--text-muted); font-size: 1rem; }
+
+  /* Page summary */
+  .page-summary {
+    background: linear-gradient(135deg, rgba(255,180,0,0.06), rgba(255,180,0,0.01));
+    border: 1px solid rgba(255,180,0,0.12);
+    border-radius: 16px;
+    padding: 22px 28px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .page-summary .summary-icon { font-size: 2rem; }
+  .page-summary h3 { color: #ffc800; font-size: 1rem; margin-bottom: 4px; }
+  .page-summary p  { color: var(--text-muted); font-size: 0.88rem; margin: 0; }
+
+  /* Filter row */
+  .filter-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-btn {
+    padding: 7px 18px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-main);
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: rgba(0,255,85,0.12);
+    border-color: rgba(0,255,85,0.3);
+    color: var(--accent-neon);
+  }
+</style>
+{% endblock %}
+
+{% block layout %}
+<div class="dashboard-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="{% url 'home' %}" class="brand">CPI</a>
+    <ul class="sidebar-nav">
+      <li><a href="{% url 'dashboard' %}">📊 Dashboard</a></li>
+      <li><a href="{% url 'products' %}">🛍️ Products</a></li>
+      <li><a href="{% url 'pricing_recommendations' %}" class="active">📈 Analytics</a></li>
+      <li><a href="{% url 'scrape_logs' %}">📋 Scrape Logs</a></li>
+      <li><a href="{% url 'your_products' %}">📦 My Products</a></li>
+      <li style="margin-top:auto; padding-top:30px;"><a href="{% url 'logout' %}">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="dashboard-content">
+
+    <div class="dashboard-header flex-between">
+      <div>
+        <p style="color:var(--accent-neon); font-weight:700; font-size:0.78rem; letter-spacing:1.2px;">AI-DRIVEN</p>
+        <h1>Pricing Recommendations</h1>
+      </div>
+      <div style="color:var(--text-muted); font-size:0.9rem;">
+        {{ recommendations|length }} recommendation{{ recommendations|length|pluralize }}
+      </div>
+    </div>
+
+    <!-- Summary banner -->
+    <div class="page-summary">
+      <div class="summary-icon">💡</div>
+      <div>
+        <h3>Smart Pricing Engine</h3>
+        <p>Recommendations are generated based on competitor benchmarks, live demand scores, and current inventory levels.</p>
+      </div>
+    </div>
+
+    <!-- Filter row -->
+    <div style="margin-bottom: 30px; display: flex; gap: 10px;">
+        <button class="filter-btn active" onclick="filterStrategy('all', this)">All</button>
+        <button class="filter-btn" onclick="filterStrategy('parity', this)">Parity Pricing</button>
+        <button class="filter-btn" onclick="filterStrategy('inventory', this)">Inventory Pricing</button>
+        <button class="filter-btn" onclick="filterStrategy('demand', this)">Demand Pricing</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      {% if recommendations %}
+      <table class="custom-table" id="recTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product</th>
+            <th>Current Price</th>
+            <th>Recommended Price</th>
+            <th>Strategy</th>
+            <th>Demand Score</th>
+            <th>Inventory Level</th>
+            <th>Generated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rec in recommendations %}
+          <tr data-primary-price="{{ rec.recommended_price|default:rec.current_price }}"
+              data-primary-strategy="{{ rec.pricing_strategy }}"
+              data-parity-price="{{ rec.parity_price_calc|default:'None' }}"
+              data-inventory-price="{{ rec.inventory_price_calc|default:rec.current_price }}"
+              data-demand-price="{{ rec.demand_price_calc|default:'None' }}"
+              data-current-price="{{ rec.current_price|default:0 }}">
+            <td style="color:var(--text-muted);">{{ forloop.counter }}</td>
+            <td>
+              <span style="font-weight:600; color:var(--accent-neon);">
+                {{ rec.product.product_name }}
+              </span>
+            </td>
+            <td style="font-weight:600;">
+              {% if rec.current_price %}₹{{ rec.current_price }}{% else %}<span style="color:var(--text-muted);">—</span>{% endif %}
+            </td>
+            <td>
+              <span class="rec-price-display">
+                {% if rec.recommended_price %}
+                  {% if rec.current_price %}
+                    {% if rec.recommended_price > rec.current_price %}
+                      <span class="price-up" style="font-weight:700; font-size:1rem; color: #ff4d4d;">↑ ₹{{ rec.recommended_price }}</span>
+                    {% elif rec.recommended_price < rec.current_price %}
+                      <span class="price-down" style="font-weight:700; font-size:1rem; color: #00ff55;">↓ ₹{{ rec.recommended_price }}</span>
+                    {% else %}
+                      <span class="price-same" style="font-weight:700; font-size:1rem; color: #888;">→ ₹{{ rec.recommended_price }}</span>
+                    {% endif %}
+                  {% else %}
+                    <span style="color:var(--accent-neon); font-weight:700;">₹{{ rec.recommended_price }}</span>
+                  {% endif %}
+                {% else %}
+                  <span style="color:var(--text-muted);">—</span>
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              <span class="rec-strategy-display">
+                {% if rec.pricing_strategy %}
+                  {% with s=rec.pricing_strategy|lower %}
+                    {% if "penetration" in s %}
+                      <span class="strategy-badge strategy-penetration">{{ rec.pricing_strategy }}</span>
+                    {% elif "skimming" in s %}
+                      <span class="strategy-badge strategy-skimming">{{ rec.pricing_strategy }}</span>
+                    {% elif "competitive" in s %}
+                      <span class="strategy-badge strategy-competitive">{{ rec.pricing_strategy }}</span>
+                    {% elif "premium" in s %}
+                      <span class="strategy-badge strategy-premium">{{ rec.pricing_strategy }}</span>
+                    {% else %}
+                      <span class="strategy-badge strategy-default">{{ rec.pricing_strategy }}</span>
+                    {% endif %}
+                  {% endwith %}
+                {% else %}
+                  <span style="color:var(--text-muted);">—</span>
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              {% if rec.demand_score %}
+                <div class="demand-bar-wrap">
+                  <div class="demand-bar-bg">
+                    <div class="demand-bar-fill" style="width: {{ rec.demand_score }}%;"></div>
+                  </div>
+                  <span class="demand-val">{{ rec.demand_score }}</span>
+                </div>
+              {% else %}
+                <span style="color:var(--text-muted);">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if rec.inventory_level != None %}
+                {% if rec.inventory_level <= 10 %}
+                  <span class="inv-low">⚠ {{ rec.inventory_level }} units</span>
+                {% elif rec.inventory_level <= 50 %}
+                  <span class="inv-mid">{{ rec.inventory_level }} units</span>
+                {% else %}
+                  <span class="inv-high">{{ rec.inventory_level }} units</span>
+                {% endif %}
+              {% else %}
+                <span style="color:var(--text-muted);">—</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--text-muted); white-space:nowrap; font-size:0.82rem;">
+              {% if rec.generated_at %}{{ rec.generated_at|date:"M d, Y" }}{% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <div class="emoji">💡</div>
+        <h3>No recommendations yet</h3>
+        <p>Run a competitive analysis to generate AI-driven pricing recommendations for your products.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function formatPriceHTML(newPrice, currentPrice) {
+    if (!newPrice || newPrice === "None" || newPrice === "0.00") return '<span style="color:var(--text-muted); font-size: 0.9rem;">— Missing Data —</span>';
+    if (!currentPrice || currentPrice === "None") return `<span style="color:var(--accent-neon); font-weight:700;">₹${newPrice}</span>`;
+    
+    let np = parseFloat(newPrice);
+    let cp = parseFloat(currentPrice);
+    
+    if (np > cp) {
+      return `<span class="price-up" style="font-weight:700; font-size:1rem; color: #ff4d4d;">↑ ₹${np.toFixed(2)}</span>`;
+    } else if (np < cp) {
+      return `<span class="price-down" style="font-weight:700; font-size:1rem; color: #00ff55;">↓ ₹${np.toFixed(2)}</span>`;
+    } else {
+      return `<span class="price-same" style="font-weight:700; font-size:1rem; color: #888;">→ ₹${np.toFixed(2)}</span>`;
+    }
+  }
+
+  function formatStrategyHTML(strategyName) {
+    if (!strategyName) return '<span style="color:var(--text-muted);">—</span>';
+    return `<span class="strategy-badge strategy-default">${strategyName}</span>`;
+  }
+
+  function filterStrategy(strategy, btn) {
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Override prices and strategies interactively
+    const rows = document.querySelectorAll('#recTable tbody tr');
+    rows.forEach(row => {
+      let currentPrice = row.getAttribute('data-current-price');
+      let targetPrice = "";
+      let targetStrategy = "";
+
+      if (strategy === 'all') {
+        targetPrice = row.getAttribute('data-primary-price');
+        targetStrategy = row.getAttribute('data-primary-strategy');
+      } else if (strategy === 'parity') {
+        targetPrice = row.getAttribute('data-parity-price');
+        targetStrategy = "Parity Pricing";
+      } else if (strategy === 'inventory') {
+        targetPrice = row.getAttribute('data-inventory-price');
+        targetStrategy = "Inventory Pricing";
+      } else if (strategy === 'demand') {
+        targetPrice = row.getAttribute('data-demand-price');
+        targetStrategy = "Demand Pricing";
+      }
+
+      // Format and inject HTML
+      row.querySelector('.rec-price-display').innerHTML = formatPriceHTML(targetPrice, currentPrice);
+      row.querySelector('.rec-strategy-display').innerHTML = formatStrategyHTML(targetStrategy);
+    });
+  }
+</script>
+{% endblock %}
